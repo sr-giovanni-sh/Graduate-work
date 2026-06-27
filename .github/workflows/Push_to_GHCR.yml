@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{sr-giovanni-sh/Graduate-work}}
+  IMAGE_NAME: sr-giovanni-sh/graduate-work
 
 jobs: 
   build-and-push:
