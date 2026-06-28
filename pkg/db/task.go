@@ -214,12 +214,12 @@ func Tasks(limit int, search string) ([]*Task, error) {
 		var t Task
 		err := rows.Scan(&t.ID, &t.Date, &t.Title, &t.Comment, &t.Repeat)
 		if err != nil {
-			return []*Task{}, fmt.Errorf("error scaning rows: %v", err)
+			return nil, fmt.Errorf("error scaning rows: %v", err)
 		}
 		tasks = append(tasks, &t)
 	}
 	if err = rows.Err(); err != nil {
-		return []*Task{}, fmt.Errorf("rows error: %v", err)
+		return nil, fmt.Errorf("rows error: %v", err)
 	}
 
 	return tasks, nil

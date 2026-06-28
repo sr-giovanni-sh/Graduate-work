@@ -4,27 +4,37 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type Handler struct {
+	Password string
+}
+
+func NewHandler(password string) *Handler {
+	return &Handler{
+		Password: password,
+	}
+}
+
 /*
 Init registers all application routes, splitting them into public endpoints
 
 	and endpoints protected by authentication middleware.
 */
-func Init(r chi.Router) {
-	r.Get("/api/nextdate", NextDayHandler)
-	r.Post("/api/signin", SignInHandler)
+func (h *Handler) RegisterRoutes(r chi.Router) {
+	r.Get("/api/nextdate", h.NextDayHandler)
+	r.Post("/api/signin", h.SignInHandler)
 
 	r.Group(func(r chi.Router) {
-		r.Use(AuthMiddleware)
+		r.Use(h.AuthMiddleware)
 
-		r.Get("/api/tasks", tasksHandler)
+		r.Get("/api/tasks", h.tasksHandler)
 
 		r.Route("/api/task", func(r chi.Router) {
-			r.Post("/", AddTaskHandler)
-			r.Get("/", GetTaskHandler)
-			r.Put("/", UpdateTaskHandler)
-			r.Delete("/", DeleteTaskHandler)
+			r.Post("/", h.AddTaskHandler)
+			r.Get("/", h.GetTaskHandler)
+			r.Put("/", h.UpdateTaskHandler)
+			r.Delete("/", h.DeleteTaskHandler)
 
-			r.Post("/done", TaskDoneHandler)
+			r.Post("/done", h.TaskDoneHandler)
 		})
 	})
 }

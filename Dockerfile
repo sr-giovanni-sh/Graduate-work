@@ -18,8 +18,6 @@ RUN apk --no-cache add ca-certificates tzdata
 COPY --from=builder /app/todo-app .
 COPY --from=builder /app/web ./web
 
-EXPOSE 7540
-
 ENV TODO_PORT=7540
 ENV TODO_DBFILE=/app/scheduler.db
 ENV TODO_PASSWORD=""

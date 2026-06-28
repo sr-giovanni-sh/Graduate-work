@@ -38,10 +38,6 @@ Returns:
 - An error describing the failure if any step (opening, pinging, or schema execution) fails.
 */
 func Init(dbFile string) error {
-	if envDBFile := os.Getenv("TODO_DBFILE"); envDBFile != "" {
-		dbFile = envDBFile
-	}
-
 	stat, err := os.Stat(dbFile)
 	var install bool
 	if err != nil {
@@ -56,6 +52,7 @@ func Init(dbFile string) error {
 	}
 
 	if err = db.Ping(); err != nil {
+		db.Close()
 		return fmt.Errorf("error pinging database: %v", err)
 	}
 

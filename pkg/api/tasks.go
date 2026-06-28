@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+const defaultTaskLimit = 50
+
 type TaskResp struct {
 	Tasks []*db.Task `json:"tasks"`
 }
@@ -27,9 +29,10 @@ Returns:
 - A JSON object with a "Tasks" field containing the list of retrieved tasks on success.
 - An error response if the database operation fails.
 */
-func tasksHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) tasksHandler(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("search")
-	tasks, err := db.Tasks(50, search)
+
+	tasks, err := db.Tasks(defaultTaskLimit, search)
 	if err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "error receiving tasks"})
 		return

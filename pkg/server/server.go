@@ -25,15 +25,15 @@ Behavior:
   - Starts the HTTP server on the determined port.
   - Exits with a fatal log message if the server fails to start.
 */
-func StartServer() {
+func StartServer(cfgPort string, apiHandler *api.Handler) error {
 	port := "7540"
-	if envPort := os.Getenv("TODO_PORT"); envPort != "" {
-		port = envPort
+	if cfgPort != "" {
+		port = cfgPort
 	}
 
 	r := chi.NewRouter()
 
-	api.Init(r)
+	apiHandler.RegisterRoutes(r)
 
 	webDir := "./web"
 	if _, err := os.Stat(webDir); os.IsNotExist(err) {
@@ -48,7 +48,5 @@ func StartServer() {
 	r.Handle("/*", fs)
 
 	log.Printf("Starting server on port %s", port)
-	if err := http.ListenAndServe(":"+port, r); err != nil {
-		log.Fatalf("error starting server: %v", err)
-	}
+	return http.ListenAndServe(":"+port, r)
 }

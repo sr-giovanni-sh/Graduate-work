@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,11 +14,11 @@ import (
 
 If TODO_PASSWORD is not set, authentication is skipped entirely.
 */
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pass := os.Getenv("TODO_PASSWORD")
 
-		if len(pass) == 0 {
+func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if len(h.Password) == 0 {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -34,7 +33,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method")
 			}
-			return []byte(pass), nil
+			return []byte(h.Password), nil
 		})
 
 		if err != nil || !token.Valid {
@@ -48,7 +47,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		h := sha256.Sum256([]byte(pass))
+		h := sha256.Sum256([]byte(h.Password))
 		currentHash := hex.EncodeToString(h[:])
 
 		if claims["hash"].(string) != currentHash {

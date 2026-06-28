@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -27,7 +27,7 @@ Steps:
   - Returns the token in JSON format on success or an appropriate error
     response on failure.
 */
-func SignInHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 	type AuthReq struct {
 		Password string `json:"password"`
 	}
@@ -38,7 +38,7 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		errSigned   error
 	)
 
-	pass := os.Getenv("TODO_PASSWORD")
+	pass := h.Password
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -82,7 +82,7 @@ Returns:
   - An error response if the 'repeat' parameter is missing or if the 'now'
     parameter has an invalid date format.
 */
-func NextDayHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) NextDayHandler(w http.ResponseWriter, r *http.Request) {
 	dateParam := r.FormValue("date")
 	repeatParam := r.FormValue("repeat")
 	nowParam := r.FormValue("now")
@@ -112,7 +112,9 @@ func NextDayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, nextDateStr)
+	if _, err := fmt.Fprint(w, nextDateStr); err != nil {
+		log.Printf("failed to write response: %v", err)
+	}
 }
 
 /*
@@ -128,7 +130,7 @@ Returns:
 - The ID of the newly created task on success.
 - An appropriate error response if validation or database insertion fails.
 */
-func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task db.Task
 
 	err := json.NewDecoder(r.Body).Decode(&task)
@@ -169,7 +171,7 @@ Returns:
 - The task details in JSON format if found.
 - An error response if the ID is missing or the task is not found.
 */
-func GetTaskHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 	idTask := r.URL.Query().Get("id")
 	if idTask == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "ID not specified"})
@@ -198,7 +200,7 @@ Returns:
 - A success response if the task is updated.
 - An error response if validation fails or the task cannot be updated.
 */
-func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task db.Task
 
 	err := json.NewDecoder(r.Body).Decode(&task)
@@ -241,7 +243,7 @@ Returns:
 - A success response if the task is deleted.
 - An error response if the ID is missing or deletion fails.
 */
-func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "ID not specified"})
@@ -272,7 +274,7 @@ Returns:
   - An error response if the ID is missing, the task is not found, or the
     operation fails.
 */
-func TaskDoneHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) TaskDoneHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "ID not specified"})
@@ -363,7 +365,7 @@ Sets:
 - HTTP status code to 501 Not Implemented.
 - JSON body with an error message indicating the handler is not implemented.
 */
-func stubHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) stubHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusNotImplemented)
 	json.NewEncoder(w).Encode(map[string]string{"error": "not implemented"})
